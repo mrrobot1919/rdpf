@@ -5,30 +5,36 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Download
+      - name: Download ngrok
         run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
-      - name: Extract
+
+      - name: Extract ngrok
         run: Expand-Archive ngrok.zip
-      - name: Auth
+
+      - name: Authenticate ngrok (Assuming you have NGROK_AUTH_TOKEN secret)
         run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-      - name: Enable TS (Assuming local admin rights)
+
+      - name: Enable Remote Desktop (Assuming local admin rights)
+        # This step might require additional configuration depending on your system
         run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
-      - name: Enable Firewall Rule
+
+      - name: Enable Firewall Rule for Remote Desktop
         run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-      - name: Enable User Authentication
+
+      - name: Enable User Authentication for Remote Desktop
         run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+
       - name: Create Local User (Assuming local admin rights)
         run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
-      - name: Create Tunnel
+
+      - name: Create ngrok Tunnel
         run: .\ngrok\ngrok.exe tcp 3389
-      - name: Connect to RDP (**Not possible within workflow**)
-        # This step wouldn't work within GitHub Actions
-        # You would need to connect to the RDP manually using the provided ngrok URL
 
-      # Here's where the hypothetical persistence logic would go (not possible within workflow)
-      - name: Save Changes (**Not possible within workflow**)
-        # This step would ideally use a tool like rsync or a script to copy changed files
-        # to the remote storage location configured earlier
+      # This step wouldn't work within the workflow (informational only)
+      - name: Connect to RDP Manually (**Not possible within workflow**)
+        # You would need to connect to the provided ngrok URL using a dedicated RDP client
 
+      # Persistence of changes isn't achievable within the workflow (informational only)
+      # Refer to previous discussions for alternative solutions involving remote storage
