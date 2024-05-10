@@ -6,10 +6,18 @@ jobs:
 
     steps:
       - name: Download ngrok
-        run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
+        # Download ngrok using a dedicated download action
+        uses: actions/download@v2
+        with:
+          url: https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip
+          dest: ngrok.zip
 
       - name: Extract ngrok
-        run: Expand-Archive ngrok.zip
+        # Extract the downloaded archive using a dedicated unzip action
+        uses: unzip-action/unzip@v1.0.0
+        with:
+          src: ngrok.zip
+          dest: .
 
       - name: Authenticate ngrok (Assuming you have NGROK_AUTH_TOKEN secret)
         run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
@@ -37,4 +45,4 @@ jobs:
         # You would need to connect to the provided ngrok URL using a dedicated RDP client
 
       # Persistence of changes isn't achievable within the workflow (informational only)
-      # Refer to previous discussions for alternative solutions involving remote storage
+        # Refer to previous discussions for alternative solutions involving remote storage
